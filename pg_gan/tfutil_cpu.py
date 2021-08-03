@@ -12,7 +12,9 @@ import importlib
 import imp
 import numpy as np
 from collections import OrderedDict
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 
 #----------------------------------------------------------------------------
 # Convenience.

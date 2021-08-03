@@ -3,7 +3,8 @@ import os
 import pickle
 import streamlit as st
 import sys
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import urllib
 
 sys.path.append('tl_gan')
