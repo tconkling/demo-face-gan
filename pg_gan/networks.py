@@ -8,6 +8,7 @@
 import numpy as np
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
+tf.get_variable = tf.compat.v1.get_variable
 
 # NOTE: Do not import any application-specific modules here!
 
