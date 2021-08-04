@@ -12,11 +12,6 @@ import feature_axis
 import tfutil
 import tfutil_cpu
 
-# This should not be hashed by Streamlit when using st.cache.
-TL_GAN_HASH_FUNCS = {
-    tf.Session : id
-}
-
 def main():
     st.title("Streamlit Face-GAN Demo")
     """This demo demonstrates  using [Nvidia's Progressive Growing of GANs](https://research.nvidia.com/publication/2017-10_Progressive-Growing-of) and 
@@ -28,8 +23,19 @@ def main():
         download_file(filename)
 
     # Read in models from the data files.
-    tl_gan_model, feature_names = load_tl_gan_model()
-    session, pg_gan_model = load_pg_gan_model()
+    if "tl_gan_model" not in st.session_state:
+        tl_gan_model, feature_names = load_tl_gan_model()
+        session, pg_gan_model = load_pg_gan_model()
+
+        st.session_state["tl_gan_model"] = tl_gan_model
+        st.session_state["feature_names"] = feature_names
+        st.session_state["session"] = session
+        st.session_state["pg_gan_model"] = pg_gan_model
+
+    tl_gan_model = st.session_state["tl_gan_model"]
+    feature_names = st.session_state["feature_names"]
+    session = st.session_state["session"]
+    pg_gan_model = st.session_state["pg_gan_model"]
 
     st.sidebar.title('Features')
     seed = 27834096
@@ -117,8 +123,6 @@ def download_file(file_path):
         if progress_bar is not None:
             progress_bar.empty()
 
-# Ensure that load_pg_gan_model is called only once, when the app first loads.
-@st.cache(allow_output_mutation=True, hash_funcs=TL_GAN_HASH_FUNCS)
 def load_pg_gan_model():
     """
     Create the tensorflow session.
@@ -134,8 +138,6 @@ def load_pg_gan_model():
             G = pickle.load(f)
     return session, G
 
-# Ensure that load_tl_gan_model is called only once, when the app first loads.
-@st.cache(hash_funcs=TL_GAN_HASH_FUNCS)
 def load_tl_gan_model():
     """
     Load the linear model (matrix) which maps the feature space
@@ -168,7 +170,7 @@ def get_random_features(feature_names, seed):
 
 # Hash the TensorFlow session, the pg-GAN model, and the TL-GAN model by id
 # to avoid expensive or illegal computations.
-@st.memo(show_spinner=True)
+@st.memo(show_spinner=False)
 def generate_image(_session, _pg_gan_model, _tl_gan_model, features, feature_names):
     """
     Converts a feature vector into an image.
