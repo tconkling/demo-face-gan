@@ -13,10 +13,14 @@ import tfutil
 import tfutil_cpu
 
 def main():
-    st.title("Streamlit Face-GAN Demo")
-    """This demo demonstrates  using [Nvidia's Progressive Growing of GANs](https://research.nvidia.com/publication/2017-10_Progressive-Growing-of) and 
-    Shaobo Guan's [Transparent Latent-space GAN method](https://blog.insightdatascience.com/generating-custom-photo-realistic-faces-using-ai-d170b1b59255) 
-    for tuning the output face's characteristics. For more information, check out the tutorial on [Towards Data Science](https://towardsdatascience.com/building-machine-learning-apps-with-streamlit-667cef3ff509)."""
+    st.title("Streamlit Face-GAN Demo (using @st.memo)")
+    """This is an `@st.cache`-less version of the Streamlit Face-GAN Demo. It 
+    uses `st.session_state` to store the TensorFlow Session and models, and 
+    `@st.memo` to cache generated images.
+    """
+
+    """(Ideally, we'd use a `global_state` primitive for our TensorFlow objects,
+    to avoid creating new instances for each connected user.)"""
 
     # Download all data files if they aren't already in the working directory.
     for filename in EXTERNAL_DEPENDENCIES.keys():
