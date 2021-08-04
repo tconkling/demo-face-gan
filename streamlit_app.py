@@ -168,8 +168,8 @@ def get_random_features(feature_names, seed):
 
 # Hash the TensorFlow session, the pg-GAN model, and the TL-GAN model by id
 # to avoid expensive or illegal computations.
-@st.cache(show_spinner=False, hash_funcs=TL_GAN_HASH_FUNCS)
-def generate_image(session, pg_gan_model, tl_gan_model, features, feature_names):
+@st.memo(show_spinner=True)
+def generate_image(_session, _pg_gan_model, _tl_gan_model, features, feature_names):
     """
     Converts a feature vector into an image.
     """
@@ -177,12 +177,12 @@ def generate_image(session, pg_gan_model, tl_gan_model, features, feature_names)
     feature_values = np.array([features[name] for name in feature_names])
     feature_values = (feature_values - 50) / 250
     # Multiply by Shaobo's matrix to get the latent variables.
-    latents = np.dot(tl_gan_model, feature_values)
+    latents = np.dot(_tl_gan_model, feature_values)
     latents = latents.reshape(1, -1)
-    dummies = np.zeros([1] + pg_gan_model.input_shapes[1][1:])
+    dummies = np.zeros([1] + _pg_gan_model.input_shapes[1][1:])
     # Feed the latent vector to the GAN in TensorFlow.
-    with session.as_default():
-        images = pg_gan_model.run(latents, dummies)
+    with _session.as_default():
+        images = _pg_gan_model.run(latents, dummies)
     # Rescale and reorient the GAN's output to make an image.
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0),
                               0.0, 255.0).astype(np.uint8)  # [-1,1] => [0,255]
