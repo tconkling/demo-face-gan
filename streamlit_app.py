@@ -12,34 +12,20 @@ import feature_axis
 import tfutil
 import tfutil_cpu
 
+
 def main():
     st.title("Streamlit Face-GAN Demo (using @st.memo)")
     """This is an `@st.cache`-less version of the Streamlit Face-GAN Demo. It 
-    uses `st.session_state` to store the TensorFlow Session and models, and 
+    uses `@st.singleton` to store the TensorFlow Session and models, and 
     `@st.memo` to cache generated images.
     """
-
-    """(Ideally, we'd use a `global_state` primitive for our TensorFlow objects,
-    to avoid creating new instances for each connected user.)"""
 
     # Download all data files if they aren't already in the working directory.
     for filename in EXTERNAL_DEPENDENCIES.keys():
         download_file(filename)
 
-    # Read in models from the data files.
-    if "tl_gan_model" not in st.session_state:
-        tl_gan_model, feature_names = load_tl_gan_model()
-        session, pg_gan_model = load_pg_gan_model()
-
-        st.session_state["tl_gan_model"] = tl_gan_model
-        st.session_state["feature_names"] = feature_names
-        st.session_state["session"] = session
-        st.session_state["pg_gan_model"] = pg_gan_model
-
-    tl_gan_model = st.session_state["tl_gan_model"]
-    feature_names = st.session_state["feature_names"]
-    session = st.session_state["session"]
-    pg_gan_model = st.session_state["pg_gan_model"]
+    tl_gan_model, feature_names = load_tl_gan_model()
+    session, pg_gan_model = load_pg_gan_model()
 
     st.sidebar.title('Features')
     seed = 27834096
@@ -127,6 +113,8 @@ def download_file(file_path):
         if progress_bar is not None:
             progress_bar.empty()
 
+
+@st.singleton
 def load_pg_gan_model():
     """
     Create the tensorflow session.
@@ -142,6 +130,8 @@ def load_pg_gan_model():
             G = pickle.load(f)
     return session, G
 
+
+@st.singleton
 def load_tl_gan_model():
     """
     Load the linear model (matrix) which maps the feature space
@@ -163,6 +153,7 @@ def load_tl_gan_model():
             idx_base=np.flatnonzero(feature_lock_status))
     return feature_direction_disentangled, feature_names
 
+
 def get_random_features(feature_names, seed):
     """
     Return a random dictionary from feature names to feature
@@ -171,6 +162,7 @@ def get_random_features(feature_names, seed):
     np.random.seed(seed)
     features = dict((name, 40+np.random.randint(0,21)) for name in feature_names)
     return features
+
 
 # Hash the TensorFlow session, the pg-GAN model, and the TL-GAN model by id
 # to avoid expensive or illegal computations.
@@ -195,6 +187,7 @@ def generate_image(_session, _pg_gan_model, _tl_gan_model, features, feature_nam
     if USE_GPU:
         images = images.transpose(0, 2, 3, 1)  # NCHW => NHWC
     return images[0]
+
 
 USE_GPU = False
 FEATURE_DIRECTION_FILE = "feature_direction_2018102_044444.pkl"
